@@ -1,7 +1,7 @@
 """Project an OSI semantic model into a QueryGraph AI Navigator bundle.
 
 Implements the deterministic OSI -> {Croissant, CDIF, DID, ODRL} mapping
-described in REPORT.md §5.3 and ARCHITECTURE.md §4.
+described in semantic-layer-report.md §5.3 and ARCHITECTURE.md §4.
 
 Mirrors the structure of qg-python's ``AiNavigator.build()`` but takes a
 Polaris context object in place of the CLI ``NavigatorInput``.

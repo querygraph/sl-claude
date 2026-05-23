@@ -1,6 +1,6 @@
 # Architecture: QueryGraph AI Navigator in Apache Polaris, aligned with OSI
 
-This document expands [`REPORT.md` §5](REPORT.md#5-proposal-querygraph-ai-navigator-inside-apache-polaris-aligned-with-osi-and-ods) with implementation-level detail. It is intentionally close to executable: every name here corresponds to either an existing Polaris object, an OSI field, an OpenLineage facet, or one of the four QueryGraph bundle layers.
+This document expands [`semantic-layer-report.md` §5](semantic-layer-report.md#5-proposal-querygraph-ai-navigator-inside-apache-polaris-aligned-with-osi-and-ods) with implementation-level detail. It is intentionally close to executable: every name here corresponds to either an existing Polaris object, an OSI field, an OpenLineage facet, or one of the four QueryGraph bundle layers.
 
 ## 1. Object model
 
@@ -141,7 +141,7 @@ To advertise a Polaris catalog as an ODS data-space node, the navigator extensio
 - declares **DPQM** layers: upper = OSI + Croissant (OWA), lower = Iceberg snapshot (CWA);
 - enumerates federation peers (other Polaris/ODS nodes whose bundles may be accepted).
 
-## 7. Phasing (from `REPORT.md` §5.7, with API hooks)
+## 7. Phasing (from `semantic-layer-report.md` §5.7, with API hooks)
 
 | Phase | Polaris-side work | External work | Ships when |
 |---|---|---|---|

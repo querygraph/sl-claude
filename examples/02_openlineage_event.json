@@ -1,5 +1,5 @@
 {
-  "_comment": "OpenLineage RunEvent emitted when an engine resolves OSI metric total_revenue. Demonstrates the proposed OSIMetricFacet (REPORT.md §5.6, ARCHITECTURE.md §5).",
+  "_comment": "OpenLineage RunEvent emitted when an engine resolves OSI metric total_revenue. Demonstrates the proposed OSIMetricFacet (semantic-layer-report.md §5.6, ARCHITECTURE.md §5).",
 
   "eventType": "COMPLETE",
   "eventTime": "2026-05-23T10:42:17.013Z",

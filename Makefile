@@ -2,7 +2,7 @@ PY ?= python3.13
 SRC := src
 OSI := examples/01_osi_model_ecommerce.yaml
 
-.PHONY: demo bundle event ods polaris install clean help
+.PHONY: demo bundle event ods polaris install clean help pdf
 
 help:
 	@echo "Targets:"
@@ -11,7 +11,18 @@ help:
 	@echo "  make polaris  — print the proposed Polaris SemanticModel REST resource"
 	@echo "  make event    — print an OpenLineage RunEvent carrying OSIMetricFacet"
 	@echo "  make ods      — print the ODS data-product manifest"
+	@echo "  make pdf      — render semantic-layer-report.md to semantic-layer-report.pdf via pandoc + typst"
 	@echo "  make install  — install PyYAML (optional; demo falls back without it)"
+
+pdf: semantic-layer-report.pdf
+
+semantic-layer-report.pdf: semantic-layer-report.md
+	pandoc semantic-layer-report.md -o semantic-layer-report.pdf \
+	  --pdf-engine=typst \
+	  --toc --toc-depth=3 \
+	  -V title='Semantic Layers, OSI, and QueryGraph AI Navigator in Apache Polaris' \
+	  -V subtitle='A comprehensive review with reference implementation' \
+	  -V date='$(shell date -u +%Y-%m-%d)'
 
 install:
 	$(PY) -m pip install --user pyyaml

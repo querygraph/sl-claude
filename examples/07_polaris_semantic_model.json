@@ -1,5 +1,5 @@
 {
-  "_comment": "Proposed Polaris REST resource for a SemanticModel under namespace 'ecommerce' (REPORT.md §4.1, ARCHITECTURE.md §2-§3). This is what GET /v1/{catalog}/namespaces/{ns}/semantic-models/{name} returns.",
+  "_comment": "Proposed Polaris REST resource for a SemanticModel under namespace 'ecommerce' (semantic-layer-report.md §4.1, ARCHITECTURE.md §2-§3). This is what GET /v1/{catalog}/namespaces/{ns}/semantic-models/{name} returns.",
 
   "kind": "SemanticModel",
   "apiVersion": "polaris/v1",

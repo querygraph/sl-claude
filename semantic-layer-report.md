@@ -338,7 +338,8 @@ Each phase is independently shippable and useful. Nothing in phase 1 forecloses 
 
 ```
 ~/src/querygraph/semantic/claude/
-├── REPORT.md                          (this file)
+├── semantic-layer-report.md           (this file)
+├── semantic-layer-report.pdf          typeset version (pandoc + typst)
 ├── README.md                          short overview + nav
 ├── ARCHITECTURE.md                    the Polaris+Navigator design in detail
 ├── docs/
