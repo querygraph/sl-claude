@@ -1,0 +1,51 @@
+{
+  "_comment": "The same orders table as Apache Gravitino sees it. Shows that Gravitino's 'semantic layer' is unification-of-metadata — same physical bytes, projected through a connector. The OSI semantic model is orthogonal: it lives *above* this.",
+
+  "metalake": "prod_metalake",
+  "catalog": {
+    "name": "prod_catalog",
+    "type": "RELATIONAL",
+    "provider": "lakehouse-iceberg",
+    "properties": {
+      "uri": "https://polaris.example.com/api/catalog",
+      "warehouse": "s3://lake/iceberg/"
+    }
+  },
+  "schema": {
+    "name": "ecommerce.public",
+    "comment": "E-commerce production schema"
+  },
+  "table": {
+    "name": "orders",
+    "comment": "One row per placed order",
+    "auditInfo": {
+      "creator": "etl-svc",
+      "createTime": "2025-11-01T08:00:00Z",
+      "lastModifier": "etl-svc",
+      "lastModifiedTime": "2026-05-23T10:30:00Z"
+    },
+    "columns": [
+      { "name": "order_id",     "type": "long",          "nullable": false, "comment": "Order surrogate key" },
+      { "name": "order_number", "type": "string",        "nullable": true,  "comment": "Human-facing order number" },
+      { "name": "customer_id",  "type": "long",          "nullable": false, "comment": "FK to customers.id" },
+      { "name": "order_date",   "type": "date",          "nullable": false, "comment": "Date the order was placed" },
+      { "name": "amount",       "type": "decimal(18,2)", "nullable": false, "comment": "Order amount in USD" },
+      { "name": "status",       "type": "string",        "nullable": false, "comment": "completed | pending | cancelled | refunded" }
+    ],
+    "properties": {
+      "format-version": "2",
+      "current-snapshot-id": "8472619382034501122",
+      "owner": "analytics-team",
+      "gravitino.federation.upstream": "polaris://prod-catalog/ecommerce.public.orders"
+    },
+    "partitioning": [
+      { "strategy": "month", "fieldName": ["order_date"] }
+    ],
+    "_osi_link": {
+      "_comment": "How the OSI semantic model on top references this table",
+      "semanticModel": "ecommerce_analytics",
+      "datasetName": "orders",
+      "via": "OSI dataset.source = 'ecommerce.public.orders' resolves here"
+    }
+  }
+}

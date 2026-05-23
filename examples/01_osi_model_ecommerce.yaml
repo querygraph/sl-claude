@@ -1,0 +1,226 @@
+# OSI v0.2.0.dev0 semantic model — e-commerce analytics
+# Used as the source artifact for every other example in this directory.
+# Validates against open-semantic-interchange/OSI/core-spec/osi-schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/open-semantic-interchange/OSI/main/core-spec/osi-schema.json
+
+version: "0.2.0.dev0"
+
+semantic_model:
+  - name: ecommerce_analytics
+    description: E-commerce sales, customer, and product analytics
+    ai_context:
+      instructions: >
+        Use this model to answer questions about sales volume, revenue,
+        customer counts, repeat-purchase behavior, and product performance.
+        Prefer the curated metrics over ad-hoc SUM/COUNT expressions.
+      synonyms:
+        - "online shop analytics"
+        - "storefront KPIs"
+      examples:
+        - "What was total revenue last quarter?"
+        - "Show me top 10 products by units sold in 2026Q1."
+        - "What's the average order value for repeat customers?"
+
+    datasets:
+      - name: orders
+        source: ecommerce.public.orders          # resolved as Polaris namespace.table
+        primary_key: [order_id]
+        unique_keys:
+          - [order_id]
+          - [order_number]
+        description: One row per placed order. Cancelled orders are kept with status='cancelled'.
+        ai_context:
+          synonyms: ["purchases", "sales", "transactions"]
+          instructions: "Filter status='completed' for revenue-recognition queries."
+
+        fields:
+          - name: order_id
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: order_id
+            description: Order surrogate key
+
+          - name: order_number
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: order_number
+            description: Human-facing order number
+
+          - name: customer_id
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: customer_id
+            description: Foreign key to customers.id
+
+          - name: order_date
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: order_date
+                - dialect: SNOWFLAKE
+                  expression: order_date::DATE
+            dimension:
+              is_time: true
+            description: Date the order was placed
+            ai_context:
+              synonyms: ["purchase date", "transaction date"]
+
+          - name: amount
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: amount
+            description: Order amount in USD
+            ai_context:
+              synonyms: ["order total", "revenue per order"]
+
+          - name: status
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: status
+            description: One of completed, pending, cancelled, refunded
+
+      - name: customers
+        source: ecommerce.public.customers
+        primary_key: [id]
+        unique_keys:
+          - [id]
+          - [email]
+        description: Registered customer accounts
+        ai_context:
+          synonyms: ["buyers", "shoppers", "accounts"]
+
+        fields:
+          - name: id
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: id
+            description: Customer surrogate key
+
+          - name: email
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: LOWER(email)
+                - dialect: SNOWFLAKE
+                  expression: LOWER(email)::VARCHAR
+            description: Normalized email
+            ai_context:
+              synonyms: ["address", "email address"]
+
+          - name: country
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: country_code
+            description: ISO-3166 alpha-2 country code
+            ai_context:
+              synonyms: ["region", "geo"]
+
+          - name: signup_date
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: signup_date
+            dimension:
+              is_time: true
+            description: Date the account was created
+
+      - name: products
+        source: ecommerce.public.products
+        primary_key: [id]
+        description: Product catalog (active and discontinued)
+        fields:
+          - name: id
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: id
+            description: Product surrogate key
+          - name: sku
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: sku
+            description: Stock-keeping unit
+          - name: category
+            expression:
+              dialects:
+                - dialect: ANSI_SQL
+                  expression: category
+            description: Product category
+            ai_context:
+              synonyms: ["department", "section"]
+
+    relationships:
+      - name: orders_to_customers
+        from: orders
+        to: customers
+        from_columns: [customer_id]
+        to_columns: [id]
+
+    metrics:
+      - name: total_revenue
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: SUM(orders.amount)
+            - dialect: SNOWFLAKE
+              expression: SUM(orders.amount)
+            - dialect: DATABRICKS
+              expression: SUM(orders.amount)
+        description: Total revenue across all completed orders
+        ai_context:
+          synonyms: ["revenue", "gross sales", "GMV"]
+          examples:
+            - "What was the total revenue last month?"
+            - "Compare total revenue Q1 vs Q2."
+
+      - name: order_count
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: COUNT(*)
+        description: Number of orders
+        ai_context:
+          synonyms: ["orders", "transaction count"]
+
+      - name: customer_count
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: COUNT(DISTINCT customers.id)
+        description: Distinct customer count
+        ai_context:
+          synonyms: ["customers", "unique buyers"]
+
+      - name: average_order_value
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: SUM(orders.amount) / NULLIF(COUNT(*), 0)
+        description: Mean order amount
+        ai_context:
+          synonyms: ["AOV", "avg basket"]
+
+      - name: revenue_per_customer
+        expression:
+          dialects:
+            - dialect: ANSI_SQL
+              expression: SUM(orders.amount) / NULLIF(COUNT(DISTINCT customers.id), 0)
+        description: Revenue divided by distinct customers — useful for cohort comparisons
+        ai_context:
+          synonyms: ["ARPU", "revenue per buyer"]
+
+    custom_extensions:
+      - vendor_name: COMMON
+        data: '{"governance": {"data_owner": "analytics-team", "sla": "daily refresh"}}'
+      - vendor_name: DBT
+        data: '{"project_name": "ecommerce_dbt", "models_path": "models/marts"}'
+      - vendor_name: SNOWFLAKE
+        data: '{"warehouse": "ANALYTICS_WH", "database": "PROD", "schema": "ECOMMERCE"}'

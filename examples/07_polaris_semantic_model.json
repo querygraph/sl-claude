@@ -1,0 +1,66 @@
+{
+  "_comment": "Proposed Polaris REST resource for a SemanticModel under namespace 'ecommerce' (REPORT.md §4.1, ARCHITECTURE.md §2-§3). This is what GET /v1/{catalog}/namespaces/{ns}/semantic-models/{name} returns.",
+
+  "kind": "SemanticModel",
+  "apiVersion": "polaris/v1",
+
+  "metadata": {
+    "catalog": "prod-catalog",
+    "namespace": "ecommerce",
+    "name": "ecommerce_analytics",
+    "uid": "9f2b7c1e-0a3f-4b6c-bf9e-7d2c3a4b5c6d",
+    "specVersion": "OSI 0.2.0.dev0",
+    "createdAt": "2026-04-01T12:00:00Z",
+    "createdBy": "polaris://prod-catalog/principal/analytics-team",
+    "updatedAt": "2026-05-22T08:14:09Z",
+    "updatedBy": "polaris://prod-catalog/principal/analytics-team",
+    "etag": "W/\"v17\"",
+    "labels": {
+      "owner": "analytics-team",
+      "tier": "gold"
+    }
+  },
+
+  "spec": {
+    "documentRef": {
+      "_comment": "Polaris stores the OSI doc as a versioned blob; documentRef is its content-addressed location.",
+      "sha256": "f8c2d1e0b3a9e74f6c0e1ab9c4d5f6e7b8a9c0d1e2f3a4b5c6d7e8f9a0b1c2d3",
+      "contentType": "application/yaml",
+      "uri": "polaris://prod-catalog/blobs/sha256:f8c2d1e0b3a9e74f6c0e1ab9c4d5f6e7b8a9c0d1e2f3a4b5c6d7e8f9a0b1c2d3"
+    },
+    "index": {
+      "_comment": "Extracted at write time; lets the catalog answer browse queries without parsing the document.",
+      "datasets": [
+        { "name": "orders",    "source": "ecommerce.public.orders",    "resolvedTable": "prod-catalog.ecommerce.public.orders" },
+        { "name": "customers", "source": "ecommerce.public.customers", "resolvedTable": "prod-catalog.ecommerce.public.customers" },
+        { "name": "products",  "source": "ecommerce.public.products",  "resolvedTable": "prod-catalog.ecommerce.public.products" }
+      ],
+      "metrics": [
+        { "name": "total_revenue",        "synonyms": ["revenue", "gross sales", "GMV"], "dialects": ["ANSI_SQL","SNOWFLAKE","DATABRICKS"] },
+        { "name": "order_count",          "synonyms": ["orders", "transaction count"],   "dialects": ["ANSI_SQL"] },
+        { "name": "customer_count",       "synonyms": ["customers", "unique buyers"],    "dialects": ["ANSI_SQL"] },
+        { "name": "average_order_value",  "synonyms": ["AOV", "avg basket"],             "dialects": ["ANSI_SQL"] },
+        { "name": "revenue_per_customer", "synonyms": ["ARPU", "revenue per buyer"],     "dialects": ["ANSI_SQL"] }
+      ],
+      "aiContextSummary": {
+        "instructions": "Use this model to answer questions about sales volume, revenue, customer counts, repeat-purchase behavior, and product performance.",
+        "synonyms": ["online shop analytics", "storefront KPIs"]
+      }
+    }
+  },
+
+  "status": {
+    "validatedAgainstSchema": "OSI 0.2.0.dev0",
+    "validationState": "VALID",
+    "resolvedSources": "ALL_RESOLVED",
+    "lastValidatedAt": "2026-05-22T08:14:09Z"
+  },
+
+  "_links": {
+    "self":            "/v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics",
+    "document":        "/v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/document",
+    "metrics":         "/v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/metrics",
+    "navigatorBundle": "/v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/navigator-bundle",
+    "grants":          "/v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/grants"
+  }
+}

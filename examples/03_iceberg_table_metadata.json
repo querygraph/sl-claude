@@ -1,0 +1,60 @@
+{
+  "_comment": "Iceberg table metadata for ecommerce.public.orders — the physical table that OSI's dataset.source points at. Trimmed to the relevant subset of the v2 spec.",
+
+  "format-version": 2,
+  "table-uuid": "c8c4f6d1-9f6d-4a8e-9c8b-3a2e6f1c7b9d",
+  "location": "s3://lake/iceberg/ecommerce.db/orders",
+  "last-sequence-number": 142,
+  "last-updated-ms": 1748000000000,
+  "last-column-id": 6,
+
+  "schema": {
+    "schema-id": 1,
+    "type": "struct",
+    "fields": [
+      { "id": 1, "name": "order_id",     "required": true,  "type": "long" },
+      { "id": 2, "name": "order_number", "required": false, "type": "string" },
+      { "id": 3, "name": "customer_id",  "required": true,  "type": "long" },
+      { "id": 4, "name": "order_date",   "required": true,  "type": "date" },
+      { "id": 5, "name": "amount",       "required": true,  "type": "decimal(18,2)" },
+      { "id": 6, "name": "status",       "required": true,  "type": "string" }
+    ]
+  },
+
+  "partition-spec": {
+    "spec-id": 0,
+    "fields": [
+      { "name": "order_date_month", "transform": "month", "source-id": 4, "field-id": 1000 }
+    ]
+  },
+
+  "sort-order": {
+    "order-id": 1,
+    "fields": [
+      { "transform": "identity", "source-id": 4, "direction": "asc", "null-order": "nulls-last" }
+    ]
+  },
+
+  "current-snapshot-id": 8472619382034501122,
+  "snapshots": [
+    {
+      "snapshot-id": 8472619382034501122,
+      "timestamp-ms": 1748000000000,
+      "summary": {
+        "operation": "append",
+        "added-records": "12384",
+        "added-files-size": "9837412"
+      },
+      "manifest-list": "s3://lake/iceberg/ecommerce.db/orders/metadata/snap-8472619382034501122-1.avro",
+      "schema-id": 1
+    }
+  ],
+
+  "_polaris_ref": {
+    "_comment": "Resolution: OSI dataset.source 'ecommerce.public.orders' becomes this physical table via the Polaris Iceberg catalog.",
+    "catalog": "prod-catalog",
+    "namespace": "ecommerce.public",
+    "name": "orders",
+    "metadataLocation": "s3://lake/iceberg/ecommerce.db/orders/metadata/00142-c8c4f6d1.metadata.json"
+  }
+}

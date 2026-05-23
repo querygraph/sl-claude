@@ -1,0 +1,49 @@
+{
+  "_comment": "The same orders table as Unity Catalog sees it. Shows UC's three-level securable + governance metadata. The OSI metric definitions are *not* expressible here directly — UC offers tags/comments, OSI offers structured metrics. They compose.",
+
+  "name": "orders",
+  "catalog_name": "prod_catalog",
+  "schema_name": "ecommerce",
+  "table_type": "EXTERNAL",
+  "data_source_format": "ICEBERG",
+  "storage_location": "s3://lake/iceberg/ecommerce.db/orders",
+  "owner": "analytics-team@example.com",
+  "comment": "One row per placed order",
+  "properties": {
+    "delta.enableChangeDataFeed": "false",
+    "iceberg.metadata-location": "s3://lake/iceberg/ecommerce.db/orders/metadata/00142-c8c4f6d1.metadata.json"
+  },
+
+  "columns": [
+    { "name": "order_id",     "type_name": "LONG",    "type_text": "bigint",         "nullable": false, "comment": "Order surrogate key" },
+    { "name": "order_number", "type_name": "STRING",  "type_text": "string",         "nullable": true,  "comment": "Human-facing order number" },
+    { "name": "customer_id",  "type_name": "LONG",    "type_text": "bigint",         "nullable": false, "comment": "FK to customers.id" },
+    { "name": "order_date",   "type_name": "DATE",    "type_text": "date",           "nullable": false, "comment": "Date the order was placed" },
+    { "name": "amount",       "type_name": "DECIMAL", "type_text": "decimal(18,2)",  "nullable": false, "comment": "Order amount in USD" },
+    { "name": "status",       "type_name": "STRING",  "type_text": "string",         "nullable": false, "comment": "Status of the order" }
+  ],
+
+  "table_constraints": [
+    { "name": "orders_pk", "primary_key_constraint": { "child_columns": ["order_id"] } },
+    { "name": "orders_to_customers_fk",
+      "foreign_key_constraint": {
+        "child_columns": ["customer_id"],
+        "parent_table": "prod_catalog.ecommerce.customers",
+        "parent_columns": ["id"]
+      }
+    }
+  ],
+
+  "tags": [
+    { "key": "domain", "value": "ecommerce" },
+    { "key": "tier",   "value": "gold" },
+    { "key": "osi.semantic_model", "value": "ecommerce_analytics" }
+  ],
+
+  "_osi_link": {
+    "_comment": "UC tag 'osi.semantic_model' is one possible breadcrumb back to the OSI model in Polaris. The OSI model is the authoritative source of the metric definitions; UC tags are a discoverability hint only.",
+    "semanticModel": "ecommerce_analytics",
+    "polarisCatalog": "prod-catalog",
+    "polarisNamespace": "ecommerce"
+  }
+}

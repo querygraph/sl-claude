@@ -1,0 +1,214 @@
+{
+  "_comment": "Output of the proposed Polaris navigator-bundle endpoint for the e-commerce OSI model. Same shape as qg-python's AiNavigator.build(), with OSI as a first-class layer. This is what an AI agent fetches to ground a query.",
+
+  "@context": {
+    "schema": "https://schema.org/",
+    "cr": "http://mlcommons.org/croissant/",
+    "cdif": "https://cdif.codata.org/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dct": "http://purl.org/dc/terms/",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "osi": "https://open-semantic-interchange.org/ns#",
+    "polaris": "https://polaris.apache.org/ns#",
+    "querygraph": "https://querygraph.ai/ns#"
+  },
+  "@type": "querygraph:AiNavigatorSemanticBundle",
+  "generatedAt": "2026-05-23T10:42:17Z",
+
+  "identity": {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://w3id.org/security/suites/ed25519-2020/v1"
+    ],
+    "id": "did:oyd:z6MkpvbXrTjzVKM4hVqYqHs6cF1tQkNQqDp4o5w9b8jY3a7N",
+    "controller": "polaris://prod-catalog/principal/analytics-team",
+    "public_key_multibase": "z6MkpvbXrTjzVKM4hVqYqHs6cF1tQkNQqDp4o5w9b8jY3a7N",
+    "service_endpoint": "https://polaris.example.com/catalogs/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics"
+  },
+
+  "layers": {
+    "osi": {
+      "_comment": "Verbatim copy of the OSI document — single source of truth for metric expressions.",
+      "version": "0.2.0.dev0",
+      "semantic_model": [
+        {
+          "name": "ecommerce_analytics",
+          "description": "E-commerce sales, customer, and product analytics",
+          "ai_context": {
+            "instructions": "Use this model to answer questions about sales volume, revenue, customer counts, repeat-purchase behavior, and product performance. Prefer the curated metrics over ad-hoc SUM/COUNT expressions.",
+            "synonyms": ["online shop analytics", "storefront KPIs"]
+          },
+          "datasets": [
+            {
+              "name": "orders",
+              "source": "ecommerce.public.orders",
+              "primary_key": ["order_id"],
+              "description": "One row per placed order."
+            },
+            {
+              "name": "customers",
+              "source": "ecommerce.public.customers",
+              "primary_key": ["id"]
+            },
+            {
+              "name": "products",
+              "source": "ecommerce.public.products",
+              "primary_key": ["id"]
+            }
+          ],
+          "relationships": [
+            { "name": "orders_to_customers", "from": "orders", "to": "customers", "from_columns": ["customer_id"], "to_columns": ["id"] }
+          ],
+          "metrics": [
+            {
+              "name": "total_revenue",
+              "expression": {
+                "dialects": [
+                  { "dialect": "ANSI_SQL",   "expression": "SUM(orders.amount)" },
+                  { "dialect": "SNOWFLAKE",  "expression": "SUM(orders.amount)" },
+                  { "dialect": "DATABRICKS", "expression": "SUM(orders.amount)" }
+                ]
+              },
+              "description": "Total revenue across all completed orders",
+              "ai_context": { "synonyms": ["revenue", "gross sales", "GMV"] }
+            },
+            {
+              "name": "customer_count",
+              "expression": { "dialects": [{ "dialect": "ANSI_SQL", "expression": "COUNT(DISTINCT customers.id)" }] },
+              "description": "Distinct customer count",
+              "ai_context": { "synonyms": ["customers", "unique buyers"] }
+            }
+          ]
+        }
+      ]
+    },
+
+    "semanticCroissant": {
+      "@context": {
+        "@vocab": "https://schema.org/",
+        "cr": "http://mlcommons.org/croissant/"
+      },
+      "@type": "cr:Dataset",
+      "@id": "https://polaris.example.com/catalogs/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics#dataset",
+      "name": "ecommerce_analytics",
+      "description": "E-commerce sales, customer, and product analytics",
+      "license": "https://creativecommons.org/licenses/by/4.0/",
+      "keywords": ["online shop analytics", "storefront KPIs", "purchases", "sales", "buyers"],
+      "creator": [{ "@type": "Organization", "name": "analytics-team" }],
+      "distribution": [
+        {
+          "@type": "cr:FileObject",
+          "@id": "polaris://prod-catalog/ecommerce.public.orders",
+          "name": "orders",
+          "contentUrl": "s3://lake/iceberg/ecommerce.db/orders/metadata/00142-c8c4f6d1.metadata.json",
+          "encodingFormat": "application/vnd.apache.iceberg.metadata+json"
+        },
+        {
+          "@type": "cr:FileObject",
+          "@id": "polaris://prod-catalog/ecommerce.public.customers",
+          "name": "customers",
+          "contentUrl": "s3://lake/iceberg/ecommerce.db/customers/metadata/00078-f0a2.metadata.json",
+          "encodingFormat": "application/vnd.apache.iceberg.metadata+json"
+        },
+        {
+          "@type": "cr:FileObject",
+          "@id": "polaris://prod-catalog/ecommerce.public.products",
+          "name": "products",
+          "contentUrl": "s3://lake/iceberg/ecommerce.db/products/metadata/00031-b1c4.metadata.json",
+          "encodingFormat": "application/vnd.apache.iceberg.metadata+json"
+        }
+      ],
+      "recordSet": [
+        {
+          "@type": "cr:RecordSet",
+          "@id": "orders",
+          "name": "orders",
+          "field": [
+            { "@type": "cr:Field", "name": "order_id",     "dataType": "sc:Integer", "description": "Order surrogate key" },
+            { "@type": "cr:Field", "name": "customer_id",  "dataType": "sc:Integer", "description": "FK to customers.id",
+              "references": { "@id": "customers", "field": "id" } },
+            { "@type": "cr:Field", "name": "order_date",   "dataType": "sc:Date",    "description": "Date placed",
+              "sameAs": "https://schema.org/dateCreated" },
+            { "@type": "cr:Field", "name": "amount",       "dataType": "sc:Number",  "description": "Order amount USD",
+              "sameAs": "https://schema.org/MonetaryAmount" }
+          ]
+        }
+      ]
+    },
+
+    "cdif": {
+      "@context": { "cdif": "https://cdif.codata.org/", "dcat": "http://www.w3.org/ns/dcat#", "dct": "http://purl.org/dc/terms/" },
+      "@type": "dcat:Dataset",
+      "@id": "https://polaris.example.com/catalogs/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics",
+      "cdif:profile": [
+        "https://cdif.codata.org/profile/discovery",
+        "https://cdif.codata.org/profile/data-access",
+        "https://cdif.codata.org/profile/controlled-vocabularies",
+        "https://cdif.codata.org/profile/data-integration",
+        "https://cdif.codata.org/profile/universals"
+      ],
+      "dcat:landingPage": "https://polaris.example.com/catalogs/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics",
+      "dcat:accessService": {
+        "@type": "dcat:DataService",
+        "endpointURL": "https://polaris.example.com/api/catalog/v1/prod-catalog",
+        "dct:conformsTo": "https://iceberg.apache.org/rest-catalog-open-api/"
+      },
+      "cdif:controlledVocabulary": [
+        "https://schema.org/dateCreated",
+        "https://schema.org/MonetaryAmount",
+        "https://schema.org/Person",
+        "https://schema.org/Organization"
+      ]
+    },
+
+    "did": {
+      "id": "did:oyd:z6MkpvbXrTjzVKM4hVqYqHs6cF1tQkNQqDp4o5w9b8jY3a7N",
+      "controller": "polaris://prod-catalog/principal/analytics-team",
+      "service_endpoint": "https://polaris.example.com/catalogs/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics"
+    },
+
+    "odrl": {
+      "@type": "odrl:Policy",
+      "@id": "https://polaris.example.com/catalogs/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/policy/default",
+      "odrl:target": "did:oyd:z6MkpvbXrTjzVKM4hVqYqHs6cF1tQkNQqDp4o5w9b8jY3a7N",
+      "odrl:assigner": "polaris://prod-catalog/principal/analytics-team",
+      "odrl:permission": [
+        {
+          "_comment": "Maps from Polaris grant USE_SEMANTIC_MODEL to bi-tools-role",
+          "odrl:action": "odrl:read",
+          "odrl:assignee": "polaris://prod-catalog/role/bi-tools",
+          "odrl:constraint": "attribution required"
+        },
+        {
+          "_comment": "Maps from Polaris grant EXPORT_NAVIGATOR_BUNDLE to ai-agents-role",
+          "odrl:action": "querygraph:index",
+          "odrl:assignee": "polaris://prod-catalog/role/ai-agents",
+          "odrl:constraint": "local semantic indexing for AI Navigator only"
+        }
+      ],
+      "odrl:prohibition": [
+        {
+          "_comment": "No grant for DERIVE => default prohibition",
+          "odrl:action": "odrl:derive",
+          "odrl:assignee": "public",
+          "odrl:constraint": "no model training without separate agreement"
+        }
+      ]
+    }
+  },
+
+  "querygraph:metricCatalog": [
+    {
+      "name": "total_revenue",
+      "synonyms": ["revenue", "gross sales", "GMV"],
+      "description": "Total revenue across all completed orders",
+      "dialects": ["ANSI_SQL", "SNOWFLAKE", "DATABRICKS"]
+    },
+    {
+      "name": "customer_count",
+      "synonyms": ["customers", "unique buyers"],
+      "description": "Distinct customer count",
+      "dialects": ["ANSI_SQL"]
+    }
+  ]
+}

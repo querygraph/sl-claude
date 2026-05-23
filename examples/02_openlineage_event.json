@@ -1,0 +1,130 @@
+{
+  "_comment": "OpenLineage RunEvent emitted when an engine resolves OSI metric total_revenue. Demonstrates the proposed OSIMetricFacet (REPORT.md §5.6, ARCHITECTURE.md §5).",
+
+  "eventType": "COMPLETE",
+  "eventTime": "2026-05-23T10:42:17.013Z",
+
+  "run": {
+    "runId": "01977b4b-3b9c-7d3e-9e62-1e0c8b67d2aa",
+    "facets": {
+      "nominalTime": {
+        "_producer": "polaris-osi-emitter/0.1",
+        "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/NominalTimeRunFacet.json",
+        "nominalStartTime": "2026-05-23T10:42:17.000Z"
+      }
+    }
+  },
+
+  "job": {
+    "namespace": "polaris://prod-catalog",
+    "name": "ecommerce_analytics.total_revenue",
+    "facets": {
+      "sql": {
+        "_producer": "polaris-osi-emitter/0.1",
+        "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/SQLJobFacet.json",
+        "query": "SELECT DATE_TRUNC('quarter', order_date) AS q, SUM(amount) AS total_revenue FROM ecommerce.public.orders WHERE status = 'completed' GROUP BY 1"
+      },
+      "ownership": {
+        "_producer": "polaris-osi-emitter/0.1",
+        "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/OwnershipJobFacet.json",
+        "owners": [{ "name": "analytics-team", "type": "MAINTAINER" }]
+      },
+      "osiMetric": {
+        "_producer": "polaris-osi-emitter/0.1",
+        "_schemaURL": "https://querygraph.ai/schemas/OSIMetricFacet.json",
+        "_comment": "PROPOSED community facet — binds an OL job to the OSI metric it computes.",
+        "semanticModel": "ecommerce_analytics",
+        "metricName": "total_revenue",
+        "dialect": "SNOWFLAKE",
+        "expression": "SUM(orders.amount)",
+        "polarisRef": {
+          "catalog": "prod-catalog",
+          "namespace": "ecommerce",
+          "semanticModel": "ecommerce_analytics"
+        },
+        "navigatorBundleDid": "did:oyd:z6MkpvbXrTjzVKM4hVqYqHs6cF1tQkNQqDp4o5w9b8jY3a7N",
+        "navigatorBundleSha256": "f8c2d1e0b3a9e74f6c0e1ab9c4d5f6e7b8a9c0d1e2f3a4b5c6d7e8f9a0b1c2d3"
+      }
+    }
+  },
+
+  "inputs": [
+    {
+      "namespace": "polaris://prod-catalog",
+      "name": "ecommerce.public.orders",
+      "facets": {
+        "schema": {
+          "_producer": "polaris-osi-emitter/0.1",
+          "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/SchemaDatasetFacet.json",
+          "fields": [
+            { "name": "order_id", "type": "BIGINT" },
+            { "name": "order_number", "type": "VARCHAR" },
+            { "name": "customer_id", "type": "BIGINT" },
+            { "name": "order_date", "type": "DATE" },
+            { "name": "amount", "type": "DECIMAL(18,2)" },
+            { "name": "status", "type": "VARCHAR" }
+          ]
+        },
+        "dataSource": {
+          "_producer": "polaris-osi-emitter/0.1",
+          "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/DatasourceDatasetFacet.json",
+          "name": "iceberg",
+          "uri": "s3://lake/iceberg/ecommerce.db/orders"
+        }
+      }
+    },
+    {
+      "namespace": "polaris://prod-catalog",
+      "name": "ecommerce.public.customers",
+      "facets": {
+        "schema": {
+          "_producer": "polaris-osi-emitter/0.1",
+          "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/SchemaDatasetFacet.json",
+          "fields": [
+            { "name": "id", "type": "BIGINT" },
+            { "name": "email", "type": "VARCHAR" },
+            { "name": "country_code", "type": "CHAR(2)" },
+            { "name": "signup_date", "type": "DATE" }
+          ]
+        }
+      }
+    }
+  ],
+
+  "outputs": [
+    {
+      "namespace": "polaris://prod-catalog",
+      "name": "ecommerce.bi.total_revenue_by_quarter",
+      "facets": {
+        "schema": {
+          "_producer": "polaris-osi-emitter/0.1",
+          "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/SchemaDatasetFacet.json",
+          "fields": [
+            { "name": "q", "type": "DATE" },
+            { "name": "total_revenue", "type": "DECIMAL(18,2)" }
+          ]
+        },
+        "columnLineage": {
+          "_producer": "polaris-osi-emitter/0.1",
+          "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/ColumnLineageDatasetFacet.json",
+          "fields": {
+            "q": {
+              "inputFields": [
+                { "namespace": "polaris://prod-catalog", "name": "ecommerce.public.orders", "field": "order_date" }
+              ]
+            },
+            "total_revenue": {
+              "inputFields": [
+                { "namespace": "polaris://prod-catalog", "name": "ecommerce.public.orders", "field": "amount" }
+              ],
+              "transformationDescription": "OSI metric total_revenue: SUM(orders.amount)"
+            }
+          }
+        }
+      }
+    }
+  ],
+
+  "producer": "polaris-osi-emitter/0.1",
+  "schemaURL": "https://openlineage.io/spec/1-0-5/OpenLineage.json"
+}

@@ -1,0 +1,113 @@
+# ODS Data Product Manifest
+# Published at /.well-known/ods-data-product.yaml by a Polaris catalog
+# that has the Navigator extension enabled (ARCHITECTURE.md §6).
+# Demonstrates how a Polaris namespace presents itself as an
+# Open Data Spaces conformant data-product node.
+
+apiVersion: ods.ipa.go.jp/v1alpha1
+kind: DataProduct
+metadata:
+  name: ecommerce_analytics
+  namespace: prod-catalog/ecommerce
+  did: did:oyd:z6MkpvbXrTjzVKM4hVqYqHs6cF1tQkNQqDp4o5w9b8jY3a7N
+  publisher: analytics-team@example.com
+  publishedAt: 2026-05-23T10:42:17Z
+
+# IPA ODS three governance pillars, each bound to a concrete artifact.
+governance:
+
+  # ── DAD: Data Addressability & Discoverability ──────────────────────────
+  dataAddressabilityAndDiscoverability:
+    accessService:
+      type: PolarisRESTCatalog
+      endpoint: https://polaris.example.com/api/catalog/v1/prod-catalog
+      conformsTo: https://iceberg.apache.org/rest-catalog-open-api/
+    catalogListing: /v1/prod-catalog/namespaces/ecommerce/semantic-models
+    discoveryProfile:
+      conformsTo: https://cdif.codata.org/profile/discovery
+      landingPage: https://polaris.example.com/catalogs/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics
+      keywords:
+        - "online shop analytics"
+        - "storefront KPIs"
+        - "revenue"
+
+  # ── OSI (in the ODS sense): Ontology & Semantic Interoperability ────────
+  ontologyAndSemanticInteroperability:
+    # ODS's "OSI" pillar; bound here to Open Semantic Interchange + Croissant.
+    upperOntology:
+      assumption: open-world      # DPQM upper layer (LLM-friendly, evolving)
+      semanticInterchange:
+        spec: "Open Semantic Interchange 0.2.0.dev0"
+        document: /v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/document
+        metricCount: 5
+        synonyms:
+          total_revenue:    ["revenue", "gross sales", "GMV"]
+          customer_count:   ["customers", "unique buyers"]
+      croissant:
+        # JSON-LD dataset description, sameAs-linked to controlled vocabularies
+        spec: "MLCommons Croissant 1.0"
+        document: /v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/navigator-bundle#layers.semanticCroissant
+        controlledVocabularies:
+          - https://schema.org/dateCreated
+          - https://schema.org/MonetaryAmount
+
+    lowerDataProduct:
+      assumption: closed-world     # DPQM lower layer (schema-enforced, snapshot-stable)
+      icebergSnapshots:
+        - table: ecommerce.public.orders
+          snapshotId: 8472619382034501122
+          metadataLocation: s3://lake/iceberg/ecommerce.db/orders/metadata/00142-c8c4f6d1.metadata.json
+        - table: ecommerce.public.customers
+          metadataLocation: s3://lake/iceberg/ecommerce.db/customers/metadata/00078-f0a2.metadata.json
+        - table: ecommerce.public.products
+          metadataLocation: s3://lake/iceberg/ecommerce.db/products/metadata/00031-b1c4.metadata.json
+      contract:
+        # The Croissant RecordSet schemas serve as the strict contract between layers.
+        conformsTo: /v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/navigator-bundle#layers.semanticCroissant.recordSet
+
+  # ── IUC: Identity & Usage Control ───────────────────────────────────────
+  identityAndUsageControl:
+    identity:
+      method: did:oyd
+      document: /v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/navigator-bundle#identity
+      controller: polaris://prod-catalog/principal/analytics-team
+    usageControl:
+      spec: ODRL 2.2
+      policy: /v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/navigator-bundle#layers.odrl
+      summary:
+        permittedActions:
+          - { action: odrl:read,         assignee: polaris://prod-catalog/role/bi-tools }
+          - { action: querygraph:index,  assignee: polaris://prod-catalog/role/ai-agents }
+        prohibitedActions:
+          - { action: odrl:derive,       assignee: public, reason: "no model training without separate agreement" }
+      anchoring:
+        # Optional: pin the DID to an external registry for non-repudiation.
+        service: https://odrl.dev.codata.org
+        method: did:oyd
+
+# DPQM = Double Product Quanta Model
+dpqm:
+  upper:
+    layerType: ontology
+    artifacts:
+      - osiDocument
+      - croissantRecordSet
+  lower:
+    layerType: dataProduct
+    artifacts:
+      - icebergTable
+      - openLineageEventStream
+
+# Federation
+federation:
+  acceptsBundlesFrom:
+    - did:oyd:z6MkrA1bAcceptedPartnerNodeKeyExample
+    - did:oyd:z6MkrB2bAnotherAcceptedPartnerExample
+  publishesUnder:
+    odsConformance: https://www.ipa.go.jp/en/digital/opendataspaces/ram/v0.1
+
+# Provenance: lineage stream for everything derived from this product
+lineage:
+  spec: OpenLineage 1.0
+  endpoint: https://polaris.example.com/openlineage/v1
+  exampleEvent: /v1/prod-catalog/namespaces/ecommerce/semantic-models/ecommerce_analytics/lineage/sample
